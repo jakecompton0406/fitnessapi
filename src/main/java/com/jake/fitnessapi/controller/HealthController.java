@@ -1,3 +1,6 @@
+/* Created – 4 Jan 2026
+ * Last updated – 12 Jan 2026
+ */
 package com.jake.fitnessapi.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;

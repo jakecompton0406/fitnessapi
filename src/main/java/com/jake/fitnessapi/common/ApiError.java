@@ -1,48 +1,36 @@
+/* Created – 4 Jan 2026
+ * Last updated – 12 Jan 2026
+ */
+
 package com.jake.fitnessapi.common;
 
 import java.time.Instant;
 import java.util.List;
 
 /*
- * This class defines the structure of error responses returned by the API.
- * Creating this class allows us to return consistent, readable error messages
- * instead of using Spring Boot’s default error format.
+ * Standard error response model used across the API.
+ * Ensures consistent and predictable error payloads.
  */
 public class ApiError {
 
-    /*
-     * Stores the time when the error occurred.
-     */
+    // Timestamp when the error occurred
     private Instant timestamp;
 
-    /*
-     * HTTP status code (ex: 400, 404, 500).
-     */
+    // HTTP status code (400, 404, 500, etc.)
     private int status;
 
-    /*
-     * Short description of the error type.
-     */
+    // Short error label
     private String error;
 
-    /*
-     * Detailed message explaining what went wrong.
-     */
+    // Detailed error message
     private String message;
 
-    /*
-     * The endpoint path that caused the error.
-     */
+    // Request path that caused the error
     private String path;
 
-    /*
-     * List of validation errors (only used for validation failures).
-     */
+    // Validation errors (only present for 400 responses)
     private List<FieldViolation> fieldErrors;
 
-    /*
-     * Constructor used to create an ApiError object.
-     */
     public ApiError(
             Instant timestamp,
             int status,
@@ -86,18 +74,11 @@ public class ApiError {
     }
 
     /*
-     * Inner class used to represent individual field validation errors.
+     * Represents a single field-level validation error.
      */
     public static class FieldViolation {
 
-        /*
-         * Name of the field that failed validation.
-         */
         private String field;
-
-        /*
-         * Validation error message for the field.
-         */
         private String message;
 
         public FieldViolation(String field, String message) {

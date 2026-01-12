@@ -18,10 +18,16 @@ Languages, frameworks, tools, and services used in this application:
 ## Current Features
 - Health check endpoint to verify API status
 - Root endpoint confirming the API is running
-- POST /workouts endpoint using DTO-based request input
+- POST `/workouts` endpoint using DTO-based request input
+- GET `/workouts` endpoint to retrieve all workouts
+- GET `/workouts/{id}` endpoint to retrieve a workout by ID
+- DELETE `/workouts/{id}` endpoint to remove a workout
 - Request validation using `@NotBlank`, `@NotNull`, and `@Positive`
 - Proper 201 Created responses for successful POST requests
+- Proper 204 No Content responses for successful DELETE requests
+- Proper 404 Not Found responses for missing workout IDs
 - Global exception handling with consistent JSON error responses
+- Custom `WorkoutNotFoundException` for missing resources
 - Service layer separation (controller → service → repository)
 - Database persistence using Spring Data JPA
 - H2 in-memory database for development
@@ -30,12 +36,15 @@ Languages, frameworks, tools, and services used in this application:
 
 
 ## API Endpoints
-| Method | Endpoint    | Description |
-|--------|-------------|-------------|
-| GET    | /           | Confirms the API is running |
-| GET    | /health     | API health status check |
-| GET    | /workouts   | Retrieve all workouts |
-| POST   | /workouts   | Create a new workout (validated request body) |
+| Method | Endpoint           | Description |
+|--------|--------------------|-------------|
+| GET    | /                  | Confirms the API is running |
+| GET    | /health            | API health status check |
+| GET    | /workouts          | Retrieve all workouts |
+| GET    | /workouts/{id}     | Retrieve a workout by ID |
+| POST   | /workouts          | Create a new workout (validated request body) |
+| DELETE | /workouts/{id}     | Delete a workout by ID |
+
 
 
 ## Run Locally
@@ -43,6 +52,24 @@ mvn spring-boot:run
 
 ----------------------------------------------------------------------------------------
 ## Development Log & Time Tracking
+
+### January 12, 2026 — Milestone 2.10  
+**Time Spent:** 1 hour
+
+**Summary:**  
+Work focused on expanding the API to support full CRUD robustness. GET-by-ID and DELETE endpoints were implemented, and proper 404 handling was enforced for missing workout resources. 
+The service and controller layers were refined to prevent internal server errors and ensure REST-compliant behavior. End-to-end workflows were verified using curl, including create, 
+retrieve, delete, and confirm-not-found scenarios.
+
+**Breakdown:**
+- Implemented GET `/workouts/{id}` endpoint
+- Implemented DELETE `/workouts/{id}` endpoint
+- Added `WorkoutNotFoundException` for missing resources
+- Updated global exception handling to return proper 404 responses
+- Prevented 500 errors caused by missing entities
+- Verified full POST → GET → DELETE → GET (404) workflow
+- Confirmed consistent JSON error responses across endpoints
+
 
 ### January 11, 2026 — Milestone 2.8 & 2.9  
 **Time Spent:** 1.0 hour
@@ -123,7 +150,7 @@ The foundation of the API was established so future features could be added clea
 ----------------------------------------------------------------------------------------
 
 ### Total Time Invested
-**8.5 hours**
+**9.5 hours**
 
 ----------------------------------------------------------------------------------------
 
@@ -275,7 +302,7 @@ The foundation of the API was established so future features could be added clea
 Planned features for future development:
 - Workout → Exercise relationships
 - Exercise, set, and rep tracking
-- Full CRUD REST endpoints
+- Complete CRUD REST endpoints (PUT / PATCH remaining)
 - Production database integration (PostgreSQL or MySQL)
 - User authentication and authorization
 - Dockerized deployment

@@ -1,4 +1,7 @@
-package com.jake.fitnessapi.dto;
+/* Created: 11 Jan 2026
+    Last updated: 12 Jan 2026 */
+    
+    package com.jake.fitnessapi.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

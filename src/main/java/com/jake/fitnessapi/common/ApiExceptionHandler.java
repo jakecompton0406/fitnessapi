@@ -1,5 +1,11 @@
+/* Created – 4 Jan 2026
+ * Last updated – 12 Jan 2026
+ */
+
 package com.jake.fitnessapi.common;
 
+import com.jake.fitnessapi.exception.WorkoutNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -12,16 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /*
- * Handles API errors in one place so controllers stay clean.
- * Also makes sure all error responses come back in the same JSON format.
+ * Centralized API exception handling.
+ * Keeps controller code clean and ensures consistent JSON error responses.
  */
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    /*
-     * Handles validation errors from @Valid (like @NotBlank / @NotNull).
-     * Returns a 400 with a list of which fields failed.
-     */
+    // 400 – Validation errors from @Valid (ex: @NotBlank / @NotNull)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
 
@@ -43,11 +46,9 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
     }
 
-    /*
-     * Handles "not found" cases (404) when we throw NotFoundException.
-     */
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, WebRequest request) {
+    // 404 – Workout not found (thrown from service layer when an ID does not exist)
+    @ExceptionHandler(WorkoutNotFoundException.class)
+    public ResponseEntity<ApiError> handleWorkoutNotFound(WorkoutNotFoundException ex, WebRequest request) {
 
         ApiError apiError = new ApiError(
                 Instant.now(),
@@ -61,10 +62,23 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
     }
 
-    /*
-     * Catch-all for anything else (500). This prevents ugly default errors
-     * and keeps internal details from being returned to the client.
-     */
+    // 404 – JPA entity reference not found (covers getReferenceById/getById scenarios)
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiError> handleEntityNotFound(EntityNotFoundException ex, WebRequest request) {
+
+        ApiError apiError = new ApiError(
+                Instant.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                "Workout not found",
+                extractPath(request),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+    }
+
+    // 500 – Catch-all fallback (prevents leaking internal exception details to clients)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, WebRequest request) {
 
@@ -80,12 +94,9 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
     }
 
-    /*
-     * WebRequest gives us something like "uri=/workouts".
-     * This helper just cleans it up so it looks nice in the JSON.
-     */
+    // Extracts request path from WebRequest description (ex: "uri=/workouts/1" → "/workouts/1")
     private String extractPath(WebRequest request) {
-        String desc = request.getDescription(false); // ex: "uri=/workouts"
+        String desc = request.getDescription(false);
         return (desc != null && desc.startsWith("uri=")) ? desc.substring(4) : desc;
     }
 }
