@@ -2,32 +2,34 @@ package com.jake.fitnessapi.service;
 
 import com.jake.fitnessapi.dto.WorkoutRequestDTO;
 import com.jake.fitnessapi.model.Workout;
+import com.jake.fitnessapi.repository.WorkoutRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class WorkoutService {
 
-    private final List<Workout> workouts = new ArrayList<>();
+    private final WorkoutRepository workoutRepository;
 
-    // Returns all workouts currently stored in memory
-    public List<Workout> getWorkouts() {
-        return workouts;
+    // Constructor injection for repository
+    public WorkoutService(WorkoutRepository workoutRepository) {
+        this.workoutRepository = workoutRepository;
     }
 
-// Accepts DTO input and maps it into a Workout object for internal storage
-public Workout createWorkout(WorkoutRequestDTO dto) {
+    // Returns all workouts from the database
+    public List<Workout> getWorkouts() {
+        return workoutRepository.findAll();
+    }
 
-    Workout workout = new Workout();
-    workout.setType(dto.getType());
-    workout.setDurationMinutes(dto.getDurationMinutes());
-    workout.setWorkoutDate(dto.getWorkoutDate());
+    // Maps DTO to entity and saves workout to the database
+    public Workout createWorkout(WorkoutRequestDTO dto) {
 
-    workouts.add(workout);
+        Workout workout = new Workout();
+        workout.setType(dto.getType());
+        workout.setDurationMinutes(dto.getDurationMinutes());
+        workout.setWorkoutDate(dto.getWorkoutDate());
 
-    return workout;
-}
-
+        return workoutRepository.save(workout);
+    }
 }
