@@ -1,9 +1,10 @@
 /* Created – 4 Jan 2026
- * Last updated – 12 Jan 2026
+ * Last updated – 13 Jan 2026
  */
 
 package com.jake.fitnessapi.controller;
 
+import com.jake.fitnessapi.dto.WorkoutPatchDTO;
 import com.jake.fitnessapi.dto.WorkoutRequestDTO;
 import com.jake.fitnessapi.model.Workout;
 import com.jake.fitnessapi.service.WorkoutService;
@@ -27,19 +28,19 @@ public class WorkoutController {
         this.workoutService = workoutService;
     }
 
-    // GET – return all workouts
+    // GET: returns all workouts
     @GetMapping("/workouts")
     public List<Workout> getWorkouts() {
         return workoutService.getWorkouts();
     }
 
-    // GET – return workout by ID
+    // GET: returns workout by ID
     @GetMapping("/workouts/{id}")
     public Workout getWorkoutById(@PathVariable Long id) {
         return workoutService.getWorkoutById(id);
     }
 
-    // POST – create a new workout using a request DTO
+    // POST: create a new workout using a request DTO
     @PostMapping("/workouts")
     @ResponseStatus(HttpStatus.CREATED)
     public Workout createWorkout(@Valid @RequestBody WorkoutRequestDTO workoutRequestDTO) {
@@ -52,7 +53,38 @@ public class WorkoutController {
         return workoutService.createWorkout(workout);
     }
 
-    // DELETE – remove workout by ID
+    /* PUT: full update of an existing workout
+       Replaces all workout fields with new values */
+    @PutMapping("/workouts/{id}")
+    public Workout updateWorkout(
+            @PathVariable Long id,
+            @Valid @RequestBody WorkoutRequestDTO workoutRequestDTO
+    ) {
+        Workout updated = new Workout();
+        updated.setType(workoutRequestDTO.getType());
+        updated.setDurationMinutes(workoutRequestDTO.getDurationMinutes());
+        updated.setWorkoutDate(workoutRequestDTO.getWorkoutDate());
+
+        return workoutService.updateWorkout(id, updated);
+    }
+
+    /* PATCH: partial update of an existing workout
+       Only non-null fields are applied
+       @Valid enforces constraint checks on provided fields */
+    @PatchMapping("/workouts/{id}")
+    public Workout patchWorkout(
+        @PathVariable Long id,
+        @Valid @RequestBody WorkoutPatchDTO workoutPatchDTO
+    ) {
+        Workout patch = new Workout();
+        patch.setType(workoutPatchDTO.getType());
+        patch.setDurationMinutes(workoutPatchDTO.getDurationMinutes());
+        patch.setWorkoutDate(workoutPatchDTO.getWorkoutDate());
+
+        return workoutService.patchWorkout(id, patch);
+    }
+
+    // Removes workout by ID
     @DeleteMapping("/workouts/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteWorkout(@PathVariable Long id) {
