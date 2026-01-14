@@ -3,17 +3,21 @@ Spring Boot backend API for a fitness tracking application.
 
 ## Tech Stack
 Languages, frameworks, tools, and services used in this application:
-- Java
-- Spring Boot
-- Maven
-- Spring Data JPA
-- Hibernate
-- H2 Database
-- Jakarta Validation (Bean Validation)
-- RESTful APIs
 - Git / GitHub
-- Maven Wrapper
 - H2 Browser Console
+- H2 Database
+- Hibernate
+- Jakarta Validation (Bean Validation)
+- Java
+- JUnit 5
+- Maven
+- Maven Wrapper
+- MockMvc
+- Mockito
+- RESTful APIs
+- Spring Boot
+- Spring Boot Test
+- Spring Data JPA
 
 ## Current Features
 - Health check endpoint to verify API status
@@ -33,6 +37,12 @@ Languages, frameworks, tools, and services used in this application:
 - H2 in-memory database for development
 - Auto-generated database IDs for workouts
 - H2 browser console enabled for inspecting tables and data
+- Automated application context testing
+- Controller-level endpoint testing using MockMvc
+- Service-layer unit testing with Mockito
+- Validation behavior verified through automated tests
+- Isolated and repeatable test suite
+
 
 
 ## API Endpoints
@@ -52,6 +62,23 @@ mvn spring-boot:run
 
 ----------------------------------------------------------------------------------------
 ## Development Log & Time Tracking
+
+### January 13, 2026 — Milestones 2.11 & 2.12  
+**Time Spent:** 1.5 hours  
+
+**Summary:**  
+Work focused on implementing a complete automated testing foundation for the API. Application startup, controller endpoints, request validation, and service-layer logic were tested using Spring Boot Test, MockMvc, and Mockito. Tests were structured to ensure isolation, fast execution, and long-term maintainability.
+
+**Breakdown:**
+- Added application context startup test
+- Implemented HealthController endpoint tests
+- Implemented WorkoutController endpoint tests
+- Verified HTTP responses (200, 201, 400)
+- Mocked service dependencies using Mockito
+- Added service-layer unit tests for WorkoutService
+- Verified repository interaction and service behavior
+- Confirmed all tests pass with zero failures
+
 
 ### January 12, 2026 — Milestone 2.10  
 **Time Spent:** 1 hour
@@ -93,9 +120,6 @@ to database-backed persistence using Spring Data JPA with an H2 in-memory databa
 - Verified persistence through H2 browser console
 - Confirmed database-generated IDs replaced null/in-memory IDs
 - Tested full POST → DB → GET flow successfully
-
-----------------------------------------------------------------------------------------
-
 
 ----------------------------------------------------------------------------------------
 ### January 9, 2026 — Day 3  
@@ -150,11 +174,10 @@ The foundation of the API was established so future features could be added clea
 ----------------------------------------------------------------------------------------
 
 ### Total Time Invested
-**9.5 hours**
+**11.0 hours**
 
 ----------------------------------------------------------------------------------------
-
-## Personnel Notes********
+## Files Created
 
 ### `ApiError.java`
 - Defines the structure of error responses returned as JSON.
@@ -171,91 +194,111 @@ The foundation of the API was established so future features could be added clea
 - Global exception handler for the entire API.
 - Centralizes error handling so controllers do not need try/catch blocks.
 - Returns errors using the `ApiError` format for consistency.
-- Handles:
-  - validation errors (MethodArgumentNotValidException → 400)
-  - NotFoundException → 404
-  - generic exceptions → 500
+- Includes:
+  - validation error handling (MethodArgumentNotValidException → 400)
+  - NotFoundException handling → 404
+  - generic exception handling → 500
 
 ### `FitnessapiApplication.java`
 - Main Spring Boot application entry point.
 - Contains the `main()` method that starts the application.
-- **Updated January 11, 2026**
-- Added `@EntityScan` to ensure Hibernate detects JPA entity classes.
-- This update fixed issues where repositories could not find managed entities.
-- Required after adding JPA persistence and repositories.
+- Includes:
+  - Spring Boot auto-configuration
+  - `@EntityScan` configuration for JPA entities
+
+### `FitnessapiApplicationTests.java`
+- Application-level test class used to verify the project boots correctly.
+- Ensures the Spring Boot application context loads without configuration errors.
+- Includes:
+  - `contextLoads()` test method
+  - full application context initialization using `@SpringBootTest`
 
 ### `HealthController.java`
 - Simple controller used to confirm the API is running.
-- Provides the `GET /health` endpoint for quick status checks.
-- Used mainly for testing and development verification.
+- Provides a lightweight endpoint for system health verification.
+- Includes:
+  - `GET /health` endpoint
+  - basic API availability confirmation
+
+### `HealthControllerTest.java`
+- Controller-level test class for the HealthController.
+- Verifies the health endpoint is reachable and returns the correct HTTP status.
+- Includes:
+  - MockMvc-based controller testing
+  - `GET /health` request validation expecting 200 OK
 
 ### `HomeController.java`
-- Controller used to handle the root endpoint (`GET /`).
-- Prevents errors when visiting the base application URL.
-- Returns a simple message confirming the API is running.
-- Used primarily for development and testing convenience.
+- Controller used to handle the root application endpoint.
+- Prevents errors when accessing the base URL.
+- Includes:
+  - `GET /` endpoint
+  - API running confirmation message
 
 ### `NotFoundException.java`
-- Custom exception thrown when a requested resource is not found.
-- Example use case: requesting a workout ID that does not exist.
-- Caught by the global exception handler and converted into a 404 response.
+- Custom exception thrown when a requested resource cannot be found.
+- Used to represent missing entities in the application.
+- Includes:
+  - custom exception definition
+  - integration with global exception handling for 404 responses
 
 ### `Workout.java`
 - JPA entity representing the workouts database table.
-- **Updated January 11, 2026**
-- Refactored from an in-memory object into a persistent database entity.
-- Uses JPA annotations including:
-  - `@Entity`
-  - `@Table(name = "workouts")`
-  - `@Id` and `@GeneratedValue`
-- ID type changed from `UUID` to `Long` to support database-generated IDs.
-- Validation annotations were removed.
-- Validation is now handled by DTOs instead of the entity.
-- Fields include:
-  - `type`
-  - `durationMinutes`
-  - `workoutDate`
+- Defines the persistent structure of workout records.
+- Includes:
+  - `@Entity` and `@Table` annotations
+  - database-generated `Long` ID
+  - workout fields: type, durationMinutes, workoutDate
 
 ### `WorkoutController.java`
-- Controller for workout-related API endpoints.
-- Receives HTTP requests and forwards them to the service layer.
-- Does not contain business logic.
-- **Updated January 11, 2026**
-- Modified to accept a DTO instead of the `Workout` entity in POST requests.
-- Added `@Valid` to enforce request validation at the controller layer.
-- Updated to rely entirely on the service and database layers.
+- Controller responsible for workout-related API endpoints.
+- Routes HTTP requests to the service layer.
+- Includes:
+  - POST `/workouts` endpoint using DTO-based input
+  - GET `/workouts` and GET `/workouts/{id}` endpoints
+  - DELETE `/workouts/{id}` endpoint
+  - request validation using `@Valid`
+
+### `WorkoutControllerTest.java`
+- Controller-level test class for workout-related endpoints.
+- Verifies HTTP behavior and validation at the web layer.
+- Includes:
+  - MockMvc-based controller testing
+  - mocked `WorkoutService` dependency
+  - GET `/workouts` endpoint test
+  - POST `/workouts` valid request test (201 Created)
+  - POST `/workouts` invalid request test (400 Bad Request)
 
 ### `WorkoutRepository.java`
 - Repository responsible for database access for workouts.
-- Added during persistence milestone.
-- Extends `JpaRepository`, providing CRUD operations automatically.
-- Eliminates the need for manual SQL queries or in-memory lists.
-- Allows the service layer to:
-  - save workouts
-  - retrieve all workouts
-  - support updates and deletes later
-- Acts as the persistence layer between the service and database.
+- Acts as the persistence layer between service and database.
+- Includes:
+  - extension of `JpaRepository`
+  - built-in CRUD operations
+  - automatic query method support
 
 ### `WorkoutRequestDTO.java`
-- Data Transfer Object used to receive workout input from API requests.
-- Added during validation milestone.
-- Defines the expected structure for POST `/workouts`.
-- Keeps validation logic out of the `Workout` entity.
-- Uses validation annotations to enforce input rules:
-  - `@NotBlank` for required string fields
-  - `@NotNull` to ensure required values are provided
-  - `@Positive` to prevent invalid numeric values
-- Separates API input concerns from persistence models.
+- Data Transfer Object used for workout creation requests.
+- Separates API input validation from persistence models.
+- Includes:
+  - request field definitions
+  - validation annotations (`@NotBlank`, `@NotNull`, `@Positive`)
+  - mapping support to the Workout entity
 
 ### `WorkoutService.java`
-- Contains the workout-related business logic.
-- **Updated January 11, 2026**
-- Originally used an in-memory list for storage.
-- Refactored to use `WorkoutRepository` for database persistence.
-- Manual ID handling and UUID generation were removed.
-- Added DTO-to-entity mapping logic.
-- Required to support full POST → DB → GET workflow.
-- Keeps controllers clean and supports future scalability.
+- Service layer containing workout-related business logic.
+- Coordinates between controllers and repositories.
+- Includes:
+  - DTO-to-entity mapping logic
+  - database persistence delegation
+  - retrieval and deletion logic
+
+### `WorkoutServiceTest.java`
+- Service-layer unit test class for WorkoutService.
+- Verifies business logic in isolation from Spring and the database.
+- Includes:
+  - mocked `WorkoutRepository` dependency
+  - `getWorkouts()` behavior verification
+  - `createWorkout()` save and return verification
 
 ----------------------------------------------------------------------------------------
 ## Build / Project Files
@@ -309,4 +352,3 @@ Planned features for future development:
 
 ## Statement Notes******
 This project is under active development and will continue to evolve as new features and improvements are added.
-
